@@ -131,6 +131,8 @@
             numericUpDownA.Size = new Size(120, 23);
             numericUpDownA.TabIndex = 10;
             numericUpDownA.ValueChanged += numericUpDownA_ValueChanged;
+            numericUpDownA.Minimum = NumberModel.MIN_A;
+            numericUpDownA.Maximum = NumberModel.MAX_A;
             // 
             // numericUpDownB
             // 
@@ -139,6 +141,8 @@
             numericUpDownB.Size = new Size(120, 23);
             numericUpDownB.TabIndex = 11;
             numericUpDownB.ValueChanged += numericUpDownB_ValueChanged;
+            numericUpDownB.Minimum = NumberModel.MIN_B;
+            numericUpDownB.Maximum = NumberModel.MAX_B;
             // 
             // numericUpDownC
             // 
@@ -147,6 +151,8 @@
             numericUpDownC.Size = new Size(120, 23);
             numericUpDownC.TabIndex = 12;
             numericUpDownC.ValueChanged += numericUpDownC_ValueChanged;
+            numericUpDownC.Minimum = NumberModel.MIN_C;
+            numericUpDownC.Maximum = NumberModel.MAX_C;
             // 
             // trackBarA
             // 
@@ -156,6 +162,8 @@
             trackBarA.Size = new Size(120, 45);
             trackBarA.TabIndex = 13;
             trackBarA.Scroll += trackBarA_Scroll;
+            trackBarA.Minimum = NumberModel.MIN_A;
+            trackBarA.Maximum = NumberModel.MAX_A;
             // 
             // trackBarB
             // 
@@ -165,6 +173,8 @@
             trackBarB.Size = new Size(120, 45);
             trackBarB.TabIndex = 14;
             trackBarB.Scroll += trackBarB_Scroll;
+            trackBarB.Minimum = NumberModel.MIN_B;
+            trackBarB.Maximum = NumberModel.MAX_B;
             // 
             // trackBarC
             // 
@@ -174,6 +184,8 @@
             trackBarC.Size = new Size(120, 45);
             trackBarC.TabIndex = 15;
             trackBarC.Scroll += trackBarC_Scroll;
+            trackBarC.Minimum = NumberModel.MIN_C;
+            trackBarC.Maximum = NumberModel.MAX_C;
             // 
             // Form1
             // 

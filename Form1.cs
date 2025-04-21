@@ -39,17 +39,18 @@ namespace OOPLaba3._2
         }
 
         // Обработчик события изменения модели
-        private void Model_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void Model_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             UpdateControlsFromModel();
         }
 
-        // Обработчик изменения TextBox
+        // Обработчики для TextBox
+
         private void textBoxA_TextChanged(object sender, EventArgs e)
         {
             if (int.TryParse(textBoxA.Text, out int value))
             {
-                model.A = value;
+                model.SetA(value);
             }
             else
             {
@@ -61,7 +62,7 @@ namespace OOPLaba3._2
         {
             if (int.TryParse(textBoxB.Text, out int value))
             {
-                model.B = value;
+                model.SetB(value);
             }
             else
             {
@@ -73,7 +74,7 @@ namespace OOPLaba3._2
         {
             if (int.TryParse(textBoxC.Text, out int value))
             {
-                model.C = value;
+                model.SetC(value);
             }
             else
             {
@@ -81,36 +82,153 @@ namespace OOPLaba3._2
             }
         }
 
-        // Обработчик изменения NumericUpDown
+        // Обработчики для NumericUpDown
+
         private void numericUpDownA_ValueChanged(object sender, EventArgs e)
         {
-            model.A = (int)numericUpDownA.Value;
+            int newValue = (int)numericUpDownA.Value;
+
+            // Ограничиваем A максимумом для C
+            int clampedValue = Math.Min(newValue, NumberModel.MAX_C);
+
+            if (clampedValue != newValue)
+            {
+                numericUpDownA.Value = clampedValue;
+            }
+
+            model.SetA(clampedValue);
+
+            // Если A толкает C вверх, но не выше MAX_C
+            if (clampedValue > model.C)
+            {
+                int newC = clampedValue;
+                model.SetC(newC);
+                numericUpDownC.Value = newC;
+                trackBarC.Value = newC;
+            }
         }
+
+
+
 
         private void numericUpDownB_ValueChanged(object sender, EventArgs e)
         {
-            model.B = (int)numericUpDownB.Value;
+            // Получаем текущее значение из numericUpDownB
+            int newValue = (int)numericUpDownB.Value;
+
+            // Ограничиваем значение в пределах [A, C]
+            int clampedValue = Math.Max(model.A, Math.Min(model.C, newValue));
+
+            // Если значение вышло за пределы, корректируем его
+            if (clampedValue != newValue)
+            {
+                numericUpDownB.Value = clampedValue; // Корректируем значение numericUpDown
+            }
+
+            // Обновляем модель только с валидным значением
+            model.SetB(clampedValue);
         }
 
         private void numericUpDownC_ValueChanged(object sender, EventArgs e)
         {
-            model.C = (int)numericUpDownC.Value;
+            int newValue = (int)numericUpDownC.Value;
+
+            // Ограничиваем C минимумом для A
+            int clampedValue = Math.Max(newValue, NumberModel.MIN_A);
+
+            if (clampedValue != newValue)
+            {
+                numericUpDownC.Value = clampedValue;
+            }
+
+            model.SetC(clampedValue);
+
+            // Если C толкает A вниз, но не ниже MIN_A
+            if (clampedValue < model.A)
+            {
+                int newA = clampedValue;
+                model.SetA(newA);
+                numericUpDownA.Value = newA;
+                trackBarA.Value = newA;
+            }
         }
 
-        // Обработчик изменения TrackBar
+
+        // Обработчики для TrackBar
+
         private void trackBarA_Scroll(object sender, EventArgs e)
         {
-            model.A = trackBarA.Value;
+            int newValue = trackBarA.Value;
+
+            // Ограничиваем A максимумом для C
+            int clampedValue = Math.Min(newValue, NumberModel.MAX_C);
+
+            if (clampedValue != newValue)
+            {
+                trackBarA.Value = clampedValue;
+            }
+
+            model.SetA(clampedValue);
+            numericUpDownA.Value = clampedValue;
+
+            // Если A толкает C вверх
+            if (clampedValue > model.C)
+            {
+                int newC = clampedValue;
+                model.SetC(newC);
+                numericUpDownC.Value = newC;
+                trackBarC.Value = newC;
+            }
         }
+
+
 
         private void trackBarB_Scroll(object sender, EventArgs e)
         {
-            model.B = trackBarB.Value;
+            // Проверяем, находится ли значение trackBarB в пределах [A, C]
+            int newValue = trackBarB.Value;
+            int clampedValue = Math.Max(model.A, Math.Min(model.C, newValue));
+
+            // Если значение вышло за пределы, корректируем его
+            if (clampedValue != newValue)
+            {
+                trackBarB.Value = clampedValue; // Корректируем положение trackBar
+            }
+
+            // Обновляем модель только если значение валидно
+            model.SetB(clampedValue);
         }
 
         private void trackBarC_Scroll(object sender, EventArgs e)
         {
-            model.C = trackBarC.Value;
+            int newValue = trackBarC.Value;
+
+            // Ограничиваем C минимумом для A
+            int clampedValue = Math.Max(newValue, NumberModel.MIN_A);
+
+            if (clampedValue != newValue)
+            {
+                trackBarC.Value = clampedValue;
+            }
+
+            model.SetC(clampedValue);
+            numericUpDownC.Value = clampedValue;
+
+            // Если C толкает A вниз, но не ниже MIN_A
+            if (clampedValue < model.A)
+            {
+                int newA = clampedValue;
+                model.SetA(newA);
+                numericUpDownA.Value = newA;
+                trackBarA.Value = newA;
+            }
+        }
+
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            model.SaveValues(); // Сохраняем значения перед закрытием формы
         }
     }
 }

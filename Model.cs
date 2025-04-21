@@ -1,120 +1,142 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
-namespace OOPLaba3._2
+public class NumberModel : INotifyPropertyChanged
 {
-    public class NumberModel : INotifyPropertyChanged
+    public const int MIN_A = 0;
+    public const int MAX_A = 100;
+
+    public const int MIN_B = 0;
+    public const int MAX_B = 100;
+
+    public const int MIN_C = 0;
+    public const int MAX_C = 100;
+
+    private int _a;
+    private int _b;
+    private int _c;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public int A => _a;
+    public int B => _b;
+    public int C => _c;
+
+    public NumberModel()
     {
-        private int _a = 0;
-        private int _b = 0;
-        private int _c = 0;
-
-        // Событие для уведомления о изменении модели
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        // Защитный метод для вызова события PropertyChanged
-        protected void OnPropertyChanged(string propertyName)
+        if (!LoadValues())
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            // Если не удалось загрузить — устанавливаем безопасные значения
+            SetSafeDefaults();
         }
+    }
 
-        // Конструктор с загрузкой значений из файла
-        public NumberModel()
+    private void SetSafeDefaults()
+    {
+        int defaultC = Clamp(50, MIN_C, MAX_C);
+        int defaultB = Clamp(30, MIN_B, Math.Min(defaultC, MAX_B));
+        int defaultA = Clamp(10, MIN_A, Math.Min(defaultB, MAX_A));
+
+        _a = defaultA;
+        _b = defaultB;
+        _c = defaultC;
+
+        OnPropertyChanged(nameof(A));
+        OnPropertyChanged(nameof(B));
+        OnPropertyChanged(nameof(C));
+    }
+
+    public void SetA(int newValue)
+    {
+        newValue = Clamp(newValue, MIN_A, MAX_A);
+        int targetA = newValue;
+        int targetB = Math.Max(targetA, _b);
+        int targetC = Math.Max(targetB, _c);
+
+        targetB = Clamp(targetB, MIN_B, Math.Min(targetC, MAX_B));
+        targetC = Clamp(targetC, MIN_C, MAX_C);
+
+        targetB = Math.Min(targetB, targetC);
+        targetA = Math.Min(targetA, targetB);
+
+        UpdateInternalValues(targetA, targetB, targetC, _a, _b, _c);
+    }
+
+    public void SetB(int newValue)
+    {
+        int targetB = Clamp(newValue, Math.Max(_a, MIN_B), Math.Min(_c, MAX_B));
+        UpdateInternalValues(_a, targetB, _c, _a, _b, _c);
+    }
+
+    public void SetC(int newValue)
+    {
+        newValue = Clamp(newValue, MIN_C, MAX_C);
+        int targetC = newValue;
+        int targetB = Math.Min(_b, targetC);
+        int targetA = Math.Min(_a, targetB);
+
+        targetB = Clamp(targetB, MIN_B, MAX_B);
+        targetA = Clamp(targetA, MIN_A, MAX_A);
+
+        UpdateInternalValues(targetA, targetB, targetC, _a, _b, _c);
+    }
+
+    private int Clamp(int value, int min, int max)
+    {
+        return Math.Max(min, Math.Min(max, value));
+    }
+
+    private void UpdateInternalValues(int newA, int newB, int newC, int oldA, int oldB, int oldC)
+    {
+        if (_a != newA || _b != newB || _c != newC)
         {
-            LoadValues();
+            _a = newA;
+            _b = newB;
+            _c = newC;
+            OnPropertyChanged(nameof(A));
+            OnPropertyChanged(nameof(B));
+            OnPropertyChanged(nameof(C));
         }
+    }
 
-        // Геттеры и сеттеры для A, B, C
-        public int A
-        {
-            get => _a;
-            set
-            {
-                if (_a != value)
-                {
-                    _a = value;
-                    AdjustValues(); // Пересчет после изменения A
-                    SaveValues();   // Сохранение значений
-                    OnPropertyChanged(nameof(A));
-                    OnPropertyChanged(nameof(AllNumbers)); // Уведомление о глобальном изменении
-                }
-            }
-        }
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
-        public int B
-        {
-            get => _b;
-            set
-            {
-                if (_b != value)
-                {
-                    _b = value;
-                    AdjustValues(); // Пересчет после изменения B
-                    SaveValues();   // Сохранение значений
-                    OnPropertyChanged(nameof(B));
-                    OnPropertyChanged(nameof(AllNumbers)); // Уведомление о глобальном изменении
-                }
-            }
-        }
-
-        public int C
-        {
-            get => _c;
-            set
-            {
-                if (_c != value)
-                {
-                    _c = value;
-                    AdjustValues(); // Пересчет после изменения C
-                    SaveValues();   // Сохранение значений
-                    OnPropertyChanged(nameof(C));
-                    OnPropertyChanged(nameof(AllNumbers)); // Уведомление о глобальном изменении
-                }
-            }
-        }
-
-        // Комбинированное свойство для всех чисел
-        public (int A, int B, int C) AllNumbers => (_a, _b, _c);
-
-        // Метод для пересчета значений
-        private void AdjustValues()
-        {
-            // Убедимся, что A <= B <= C
-            if (_a > _b)
-            {
-                _b = _a; // Если B меньше A, то B становится равным A
-            }
-            if (_b > _c)
-            {
-                _c = _b; // Если C меньше B, то C становится равным B
-            }
-        }
-
-        // Сохранение значений в файл
-        private void SaveValues()
+    public void SaveValues()
+    {
+        try
         {
             System.IO.File.WriteAllText("values.txt", $"{_a},{_b},{_c}");
         }
+        catch { }
+    }
 
-        // Загрузка значений из файла
-        private void LoadValues()
+    public bool LoadValues()
+    {
+        try
         {
-            try
+            string[] values = System.IO.File.ReadAllText("values.txt").Split(',');
+            if (values.Length == 3 &&
+                int.TryParse(values[0], out int loadedA) &&
+                int.TryParse(values[1], out int loadedB) &&
+                int.TryParse(values[2], out int loadedC))
             {
-                string[] values = System.IO.File.ReadAllText("values.txt").Split(',');
-                if (values.Length == 3)
-                {
-                    _a = int.Parse(values[0]);
-                    _b = int.Parse(values[1]);
-                    _c = int.Parse(values[2]);
-                }
-            }
-            catch
-            {
-                _a = 10;
-                _b = 50;
-                _c = 90;
+                loadedC = Clamp(loadedC, MIN_C, MAX_C);
+                loadedB = Clamp(loadedB, MIN_B, Math.Min(loadedC, MAX_B));
+                loadedA = Clamp(loadedA, MIN_A, Math.Min(loadedB, MAX_A));
+
+                _a = loadedA;
+                _b = loadedB;
+                _c = loadedC;
+
+                OnPropertyChanged(nameof(A));
+                OnPropertyChanged(nameof(B));
+                OnPropertyChanged(nameof(C));
+                return true;
             }
         }
+        catch { }
+        return false;
     }
 }
