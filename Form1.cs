@@ -88,25 +88,19 @@ namespace OOPLaba3._2
         {
             int newValue = (int)numericUpDownA.Value;
 
-            // Ограничиваем A максимумом для C
-            int clampedValue = Math.Min(newValue, NumberModel.MAX_C);
+            // Просто устанавливаем значение через модель
+            model.SetA(newValue);
 
-            if (clampedValue != newValue)
-            {
-                numericUpDownA.Value = clampedValue;
-            }
+            // Обновляем все контролы по текущему состоянию модели
+            numericUpDownA.Value = model.A;
+            numericUpDownB.Value = model.B;
+            numericUpDownC.Value = model.C;
 
-            model.SetA(clampedValue);
-
-            // Если A толкает C вверх, но не выше MAX_C
-            if (clampedValue > model.C)
-            {
-                int newC = clampedValue;
-                model.SetC(newC);
-                numericUpDownC.Value = newC;
-                trackBarC.Value = newC;
-            }
+            trackBarA.Value = model.A;
+            trackBarB.Value = model.B;
+            trackBarC.Value = model.C;
         }
+
 
 
 
